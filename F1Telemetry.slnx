@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/F1Telemetry.Agents/F1Telemetry.Agents.csproj" />
+    <Project Path="src/F1Telemetry.App/F1Telemetry.App.csproj" />
+    <Project Path="src/F1Telemetry.Contracts/F1Telemetry.Contracts.csproj" />
+    <Project Path="src/F1Telemetry.Ingestion/F1Telemetry.Ingestion.csproj" />
+    <Project Path="src/F1Telemetry.Storage/F1Telemetry.Storage.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F1Telemetry.IntegrationTests/F1Telemetry.IntegrationTests.csproj" />
+    <Project Path="tests/F1Telemetry.UnitTests/F1Telemetry.UnitTests.csproj" />
+  </Folder>
+</Solution>
