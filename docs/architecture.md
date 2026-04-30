@@ -27,17 +27,16 @@ PS5 (F1 game)
                   ▼
 ┌─────────────────────────────────────────────┐
 │  Layer 3 — AI Agents                        │
-│  Microsoft Agent Framework                  │
 │  Orchestrator → [Braking · Corner ·         │
 │                  Tyre · Delta · Line]        │
 │                  ↕                          │
-│  ILlmClient (Ollama / OpenAI / Anthropic)   │
+│  IChatClient (Ollama / OpenAI / Anthropic)  │
 └─────────────────┬───────────────────────────┘
                   │ SignalR push
                   ▼
 ┌─────────────────────────────────────────────┐
 │  Layer 4 — Blazor Dashboard                 │
-│  ASP.NET Core · localhost:5000              │
+│  ASP.NET Core · localhost:5291              │
 │  Live charts · AI coaching · Lap comparison │
 └─────────────────────────────────────────────┘
 ```
@@ -166,26 +165,20 @@ Each completed lap is serialized to JSON and written to `~/f1telemetry/sessions/
 
 ## Layer 3 — AI Agents
 
-Built on the **Microsoft Agent Framework** using an orchestrator/specialist pattern. All agents are stateless — context is injected per invocation via structured prompts.
+All agents are stateless — context is injected per invocation via structured prompts.
 
-### ILlmClient — Pluggable Backend
+### IChatClient — Pluggable Backend
 
-```csharp
-public interface ILlmClient
-{
-    Task<string> CompleteAsync(string systemPrompt, string userPrompt,
-                               CancellationToken ct = default);
-}
-```
+The LLM abstraction is `Microsoft.Extensions.AI.IChatClient` (package `Microsoft.Extensions.AI` 10.5.0), the standard .NET interface for chat-completion providers. Each agent calls `GetResponseAsync(messages, options, ct)` and reads `ChatResponse.Text` — no agent is coupled to a specific LLM vendor.
 
-Implementations are registered by the `LLM.Provider` configuration key:
+Implementations are selected by the `LLM.Provider` configuration key:
 
 | Provider value | Implementation | Notes |
 |---|---|---|
-| `ollama` | `OllamaLlmClient` | OpenAI-compatible endpoint at `localhost:11434` |
-| `openai` | `OpenAiLlmClient` | Official `OpenAI` NuGet package |
-| `anthropic` | `AnthropicLlmClient` | HTTP client against `api.anthropic.com/v1/messages` |
-| `lmstudio` | `LmStudioLlmClient` | OpenAI-compatible endpoint at `localhost:1234` |
+| `ollama` | `OllamaApiClient` (OllamaSharp 5.4.25) | Native Ollama client; primary local LLM option |
+| `lmstudio` | `OpenAI.Chat.ChatClient.AsIChatClient()` | OpenAI-compatible endpoint; set `BaseUrl` to `http://localhost:1234` |
+| `openai` | `OpenAI.Chat.ChatClient.AsIChatClient()` | Official OpenAI SDK via `Microsoft.Extensions.AI.OpenAI` |
+| `anthropic` | `AnthropicChatClient` (internal) | Thin `IChatClient` wrapper over the Anthropic HTTP API; no official adapter exists yet |
 
 ### Agent Specialists
 
@@ -209,7 +202,7 @@ Receives the `CompletedLap` event, fans out to all five specialists concurrently
 
 ## Layer 4 — Blazor Dashboard
 
-An ASP.NET Core application hosting both the Blazor Server frontend and the REST/SignalR API. Runs entirely on `localhost:5000` — no separate frontend build step required.
+An ASP.NET Core application hosting both the Blazor Server frontend and the REST/SignalR API. Runs entirely on `localhost:5291` — no separate frontend build step required.
 
 ### Pages
 

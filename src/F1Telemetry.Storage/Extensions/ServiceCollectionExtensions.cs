@@ -17,8 +17,11 @@ public static class ServiceCollectionExtensions
         services.Configure<StorageOptions>(o => configuration.GetSection("Storage").Bind(o));
         services.Configure<InfluxDbOptions>(o => configuration.GetSection("InfluxDb").Bind(o));
 
+        string sqliteConnectionString = ExpandHome(
+            configuration.GetConnectionString("Sqlite") ?? "Data Source=f1.db");
+
         services.AddDbContext<F1TelemetryDbContext>(opts =>
-            opts.UseSqlite(configuration.GetConnectionString("Sqlite")));
+            opts.UseSqlite(sqliteConnectionString));
 
         services.AddSingleton<IInfluxDBClient>(_ =>
         {
@@ -35,5 +38,16 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<DatabaseMigrationService>();
 
         return services;
+    }
+
+    private static string ExpandHome(string value)
+    {
+        if (!value.Contains('~'))
+        {
+            return value;
+        }
+
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        return value.Replace("~", home);
     }
 }

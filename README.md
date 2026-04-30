@@ -34,7 +34,7 @@ docker compose up -d influxdb
 dotnet run --project src/F1Telemetry.App
 
 # Open dashboard
-start http://localhost:5000
+start http://localhost:5291
 ```
 
 ### Configure the LLM backend

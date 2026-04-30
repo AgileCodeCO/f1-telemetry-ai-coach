@@ -14,6 +14,17 @@ internal sealed partial class DatabaseMigrationService(
     {
         using IServiceScope scope = scopeFactory.CreateScope();
         F1TelemetryDbContext db = scope.ServiceProvider.GetRequiredService<F1TelemetryDbContext>();
+
+        string? dbPath = db.Database.GetDbConnection().DataSource;
+        if (!string.IsNullOrEmpty(dbPath))
+        {
+            string? dir = Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+        }
+
         await db.Database.EnsureCreatedAsync(cancellationToken);
         LogDatabaseReady(logger);
     }

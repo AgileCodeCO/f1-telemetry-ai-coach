@@ -28,14 +28,15 @@ Before writing or modifying any code, consult the relevant document:
 | Concern | Technology |
 |---|---|
 | Runtime | .NET 10 SDK |
-| Backend host | ASP.NET Core (Kestrel, `localhost:5000`) |
+| Backend host | ASP.NET Core (Kestrel, `localhost:5291`) |
 | Frontend | Blazor Server |
 | Real-time push | SignalR (library, not Azure service) |
 | High-frequency time-series | InfluxDB OSS 2.7 (`localhost:8086`) |
 | Relational / summaries | SQLite via EF Core |
 | Lap archive | Local filesystem JSON (`~/f1telemetry/sessions/`) |
-| AI agents | Microsoft Agent Framework |
-| LLM backend | Pluggable — Ollama, OpenAI, Anthropic, LM Studio |
+| AI agents | Custom orchestrator + specialist pattern |
+| LLM abstraction | `Microsoft.Extensions.AI.IChatClient` (v10.5.0) |
+| LLM backend | Pluggable — Ollama (OllamaSharp), OpenAI, Anthropic, LM Studio |
 | Testing | xUnit, NSubstitute, FluentAssertions, Coverlet |
 | Infrastructure | Docker Compose (InfluxDB only) |
 
@@ -49,7 +50,7 @@ f1-telemetry/
 │   ├── F1Telemetry.Contracts/     # Interfaces, DTOs, domain records — no dependencies
 │   ├── F1Telemetry.Ingestion/     # UDP listener, packet parser, session manager
 │   ├── F1Telemetry.Storage/       # InfluxDB, SQLite, and file archive repositories
-│   ├── F1Telemetry.Agents/        # AI agents, orchestrator, ILlmClient implementations
+│   ├── F1Telemetry.Agents/        # AI agents, orchestrator, IChatClient providers
 │   └── F1Telemetry.App/           # Blazor pages, SignalR hub, REST API, Program.cs
 ├── tests/
 │   ├── F1Telemetry.UnitTests/
@@ -68,7 +69,7 @@ Dependencies flow in one direction only: `App → Agents → Storage → Ingesti
 
 ## Key Architecture Decisions
 
-**ILlmClient is the LLM abstraction.** Never call an LLM provider SDK directly from an agent. Always go through `ILlmClient`. The active implementation is selected at startup from `LLM.Provider` in `appsettings.json`. Adding a new provider means implementing `ILlmClient` and registering it as a keyed service — nothing else changes.
+**`IChatClient` is the LLM abstraction.** Never call an LLM provider SDK directly from an agent. Always go through `Microsoft.Extensions.AI.IChatClient`. The active implementation is selected at startup from `LLM.Provider` in `appsettings.json`. Adding a new provider means wiring a new `IChatClient` in `ServiceCollectionExtensions` — no agent code changes. Ollama uses `OllamaSharp.OllamaApiClient`; OpenAI and LM Studio use `OpenAI.Chat.ChatClient.AsIChatClient()`; Anthropic uses the internal `AnthropicChatClient` wrapper (no official adapter exists yet).
 
 **Channel&lt;T&gt; is the ingestion pipeline.** The UDP receive loop writes to a bounded `Channel<RawPacket>` (capacity 4096, `DropOldest`). Downstream consumers read from it independently. Do not introduce any other queue or buffer between the listener and the parser.
 
@@ -119,7 +120,7 @@ docker compose up -d influxdb
 dotnet run --project src/F1Telemetry.App
 
 # Open the dashboard
-start http://localhost:5000
+start http://localhost:5291
 ```
 
 ```bash
