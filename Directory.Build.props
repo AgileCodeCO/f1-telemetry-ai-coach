@@ -19,6 +19,8 @@
   <!-- Microsoft.Extensions -->
   <PropertyGroup>
     <MicrosoftExtensionsVersion>10.0.7</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsAIVersion>10.5.0</MicrosoftExtensionsAIVersion>
+    <OllamaSharpVersion>5.4.25</OllamaSharpVersion>
     <MicrosoftEntityFrameworkCoreVersion>10.0.7</MicrosoftEntityFrameworkCoreVersion>
     <InfluxDbClientVersion>5.0.0</InfluxDbClientVersion>
     <SerilogVersion>4.2.0</SerilogVersion>
