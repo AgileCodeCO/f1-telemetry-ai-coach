@@ -1,0 +1,39 @@
+using F1Telemetry.Contracts;
+using F1Telemetry.Storage.Data;
+using F1Telemetry.Storage.Options;
+using F1Telemetry.Storage.Repositories;
+using F1Telemetry.Storage.Services;
+using InfluxDB.Client;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace F1Telemetry.Storage.Extensions;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddStorage(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<StorageOptions>(o => configuration.GetSection("Storage").Bind(o));
+        services.Configure<InfluxDbOptions>(o => configuration.GetSection("InfluxDb").Bind(o));
+
+        services.AddDbContext<F1TelemetryDbContext>(opts =>
+            opts.UseSqlite(configuration.GetConnectionString("Sqlite")));
+
+        services.AddSingleton<IInfluxDBClient>(_ =>
+        {
+            InfluxDbOptions influxOpts = new();
+            configuration.GetSection("InfluxDb").Bind(influxOpts);
+            return new InfluxDBClient(influxOpts.Url, influxOpts.Token);
+        });
+
+        services.AddScoped<ILapRepository, SqliteLapRepository>();
+        services.AddSingleton<ILapArchive, FileLapArchive>();
+        services.AddSingleton<ITelemetryRepository, InfluxTelemetryRepository>();
+
+        services.AddHostedService<LapStorageService>();
+        services.AddHostedService<DatabaseMigrationService>();
+
+        return services;
+    }
+}

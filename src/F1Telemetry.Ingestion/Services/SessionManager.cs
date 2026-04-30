@@ -15,6 +15,10 @@ internal sealed partial class SessionManager(
     private int _currentLapNum;
     private uint _sector1Ms;
     private uint _sector2Ms;
+    private float _lastWorldX;
+    private float _lastWorldY;
+    private float _lastWorldZ;
+    private readonly List<TelemetryFrame> _frameBuffer = [];
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Session manager started")]
     private static partial void LogSessionStarted(ILogger logger);
@@ -71,6 +75,24 @@ internal sealed partial class SessionManager(
     {
         UpdateSession(data.Header.SessionUid);
         LogTelemetry(logger, data.SpeedKmh, data.Throttle, data.Brake);
+
+        _frameBuffer.Add(new TelemetryFrame(
+            SessionId: _sessionId,
+            LapNumber: _currentLapNum,
+            SessionTime: data.Header.SessionTime,
+            SpeedKmh: data.SpeedKmh,
+            Throttle: data.Throttle,
+            Brake: data.Brake,
+            Gear: data.Gear,
+            EngineRpm: data.EngineRpm,
+            Drs: data.Drs,
+            TyreTempFl: data.TyreTempFl,
+            TyreTempFr: data.TyreTempFr,
+            TyreTempRl: data.TyreTempRl,
+            TyreTempRr: data.TyreTempRr,
+            WorldPositionX: _lastWorldX,
+            WorldPositionY: _lastWorldY,
+            WorldPositionZ: _lastWorldZ));
     }
 
     public void ProcessLapData(PacketLapData data)
@@ -104,12 +126,13 @@ internal sealed partial class SessionManager(
                 Sector2: TimeSpan.FromMilliseconds(_sector2Ms),
                 Sector3: TimeSpan.FromMilliseconds(s3Ms),
                 IsValid: !data.CurrentLapInvalid,
-                Frames: []);
+                Frames: [.. _frameBuffer]);
 
             LogLapCompleted(logger, completed.LapNumber, lapMs, _sessionId);
 
             eventBus.Publish(new LapCompletedEvent(completed));
 
+            _frameBuffer.Clear();
             _sector1Ms = 0;
             _sector2Ms = 0;
         }
@@ -117,8 +140,13 @@ internal sealed partial class SessionManager(
         _currentLapNum = newLap;
     }
 
-    public void ProcessMotionData(PacketMotionData data) =>
+    public void ProcessMotionData(PacketMotionData data)
+    {
         UpdateSession(data.Header.SessionUid);
+        _lastWorldX = data.WorldPositionX;
+        _lastWorldY = data.WorldPositionY;
+        _lastWorldZ = data.WorldPositionZ;
+    }
 
     public void ProcessSessionData(PacketSessionData data)
     {
@@ -145,5 +173,9 @@ internal sealed partial class SessionManager(
         _currentLapNum = 0;
         _sector1Ms = 0;
         _sector2Ms = 0;
+        _lastWorldX = 0;
+        _lastWorldY = 0;
+        _lastWorldZ = 0;
+        _frameBuffer.Clear();
     }
 }

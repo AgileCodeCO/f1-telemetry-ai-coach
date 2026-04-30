@@ -20,12 +20,12 @@
   <PropertyGroup>
     <MicrosoftExtensionsVersion>10.0.7</MicrosoftExtensionsVersion>
     <MicrosoftEntityFrameworkCoreVersion>10.0.7</MicrosoftEntityFrameworkCoreVersion>
-    <InfluxDbClientVersion>7.3.0</InfluxDbClientVersion>
+    <InfluxDbClientVersion>5.0.0</InfluxDbClientVersion>
     <SerilogVersion>4.2.0</SerilogVersion>
     <!-- Test packages -->
     <XUnitVersion>2.9.3</XUnitVersion>
     <NSubstituteVersion>5.3.0</NSubstituteVersion>
-    <FluentAssertionsVersion>6.12.1</FluentAssertionsVersion>
+    <FluentAssertionsVersion>8.9.0</FluentAssertionsVersion>
     <AutoFixtureVersion>4.18.1</AutoFixtureVersion>
     <CoverletVersion>6.0.4</CoverletVersion>
   </PropertyGroup>

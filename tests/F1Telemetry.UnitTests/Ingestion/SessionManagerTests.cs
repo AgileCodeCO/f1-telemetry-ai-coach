@@ -78,6 +78,44 @@ public class SessionManagerTests
     }
 
     [Fact]
+    public void ProcessCarTelemetry_FramesAreIncludedInLapCompletedEvent()
+    {
+        var eventBus = Substitute.For<IEventBus>();
+        var manager = CreateManager(eventBus);
+        LapCompletedEvent? captured = null;
+        eventBus.When(b => b.Publish(Arg.Any<LapCompletedEvent>()))
+                .Do(ci => captured = ci.Arg<LapCompletedEvent>());
+
+        manager.ProcessLapData(new PacketLapData { CurrentLapNum = 1 });
+        manager.ProcessCarTelemetry(new PacketCarTelemetryData { SpeedKmh = 150f, Throttle = 1f });
+        manager.ProcessCarTelemetry(new PacketCarTelemetryData { SpeedKmh = 200f, Throttle = 0.5f });
+        manager.ProcessLapData(new PacketLapData { CurrentLapNum = 2, LastLapTimeMs = 90_000 });
+
+        captured.Should().NotBeNull();
+        captured!.Lap.Frames.Should().HaveCount(2);
+        captured.Lap.Frames[0].SpeedKmh.Should().Be(150f);
+        captured.Lap.Frames[1].SpeedKmh.Should().Be(200f);
+    }
+
+    [Fact]
+    public void ProcessMotionData_WorldPositionCarriedIntoNextTelemetryFrame()
+    {
+        var eventBus = Substitute.For<IEventBus>();
+        var manager = CreateManager(eventBus);
+        LapCompletedEvent? captured = null;
+        eventBus.When(b => b.Publish(Arg.Any<LapCompletedEvent>()))
+                .Do(ci => captured = ci.Arg<LapCompletedEvent>());
+
+        manager.ProcessLapData(new PacketLapData { CurrentLapNum = 1 });
+        manager.ProcessMotionData(new PacketMotionData { WorldPositionX = 100f, WorldPositionY = 0f, WorldPositionZ = 200f });
+        manager.ProcessCarTelemetry(new PacketCarTelemetryData { SpeedKmh = 180f });
+        manager.ProcessLapData(new PacketLapData { CurrentLapNum = 2, LastLapTimeMs = 85_000 });
+
+        captured!.Lap.Frames[0].WorldPositionX.Should().Be(100f);
+        captured.Lap.Frames[0].WorldPositionZ.Should().Be(200f);
+    }
+
+    [Fact]
     public void ProcessLapData_NewSessionDetected_ResetsLapCounter()
     {
         var eventBus = Substitute.For<IEventBus>();
