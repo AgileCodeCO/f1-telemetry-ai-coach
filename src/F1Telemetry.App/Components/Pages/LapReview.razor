@@ -1,0 +1,84 @@
+@page "/lap/{SessionId}/{LapNumber:int}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject ILapRepository LapRepository
+@inject IEventBus EventBus
+@implements IAsyncDisposable
+
+<PageTitle>Lap @LapNumber Review — F1 AI Coach</PageTitle>
+
+<h1>Lap @LapNumber Review</h1>
+
+@if (_lap is null)
+{
+    <p>Loading lap data…</p>
+}
+else
+{
+    <div class="lap-summary">
+        <span>Time: @FormatTime(_lap.LapTimeMs)</span>
+        <span>S1: @FormatTime(_lap.Sector1Ms)</span>
+        <span>S2: @FormatTime(_lap.Sector2Ms)</span>
+        <span>S3: @FormatTime(_lap.Sector3Ms)</span>
+        @if (_lap.IsPersonalBest) { <span class="badge-pb">Personal Best</span> }
+    </div>
+}
+
+@if (_report is not null)
+{
+    <CoachingReportComponent Report="_report" />
+}
+else
+{
+    <p>Analysis pending…</p>
+}
+
+@code {
+    [Parameter] public string SessionId { get; set; } = string.Empty;
+    [Parameter] public int LapNumber { get; set; }
+
+    private LapSummaryDto? _lap;
+    private CoachingReportDto? _report;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IReadOnlyList<CompletedLap> laps =
+            await LapRepository.GetLapsBySessionAsync(new Contracts.SessionId(SessionId));
+        CompletedLap? match = laps.FirstOrDefault(l => l.LapNumber == LapNumber);
+        if (match is not null)
+        {
+            _lap = LapSummaryDto.FromDomain(match);
+        }
+
+        IReadOnlyList<AgentFinding> findings =
+            await LapRepository.GetFeedbackAsync(new Contracts.SessionId(SessionId), LapNumber);
+        if (findings.Count > 0)
+        {
+            _report = new CoachingReportDto(
+                LapNumber,
+                _lap?.LapTimeMs ?? 0,
+                findings.Select(FindingDto.FromDomain).ToList());
+        }
+
+        EventBus.Subscribe<CoachingReportReadyEvent>(OnReportReady);
+    }
+
+    private void OnReportReady(CoachingReportReadyEvent e)
+    {
+        if (e.Report.Lap.SessionId.Value == SessionId && e.Report.Lap.LapNumber == LapNumber)
+        {
+            _report = CoachingReportDto.FromDomain(e.Report);
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private static string FormatTime(int ms)
+    {
+        TimeSpan t = TimeSpan.FromMilliseconds(ms);
+        return $"{(int)t.TotalMinutes}:{t.Seconds:D2}.{t.Milliseconds:D3}";
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
+}

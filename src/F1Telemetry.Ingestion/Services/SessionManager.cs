@@ -76,7 +76,7 @@ internal sealed partial class SessionManager(
         UpdateSession(data.Header.SessionUid);
         LogTelemetry(logger, data.SpeedKmh, data.Throttle, data.Brake);
 
-        _frameBuffer.Add(new TelemetryFrame(
+        TelemetryFrame frame = new(
             SessionId: _sessionId,
             LapNumber: _currentLapNum,
             SessionTime: data.Header.SessionTime,
@@ -92,7 +92,10 @@ internal sealed partial class SessionManager(
             TyreTempRr: data.TyreTempRr,
             WorldPositionX: _lastWorldX,
             WorldPositionY: _lastWorldY,
-            WorldPositionZ: _lastWorldZ));
+            WorldPositionZ: _lastWorldZ);
+
+        _frameBuffer.Add(frame);
+        eventBus.Publish(new TelemetryFramePublishedEvent(frame));
     }
 
     public void ProcessLapData(PacketLapData data)

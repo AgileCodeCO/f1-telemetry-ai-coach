@@ -1,0 +1,58 @@
+@page "/sessions"
+@rendermode InteractiveServer
+@inject ILapRepository LapRepository
+
+<PageTitle>Sessions — F1 AI Coach</PageTitle>
+
+<h1>Session History</h1>
+
+@if (_sessions is null)
+{
+    <p>Loading…</p>
+}
+else if (_sessions.Count == 0)
+{
+    <p>No sessions recorded yet.</p>
+}
+else
+{
+    <table class="sessions-table">
+        <thead>
+            <tr>
+                <th>Track</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Laps</th>
+                <th>Best Lap</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (SessionSummaryDto session in _sessions)
+            {
+                <tr>
+                    <td>@session.TrackName</td>
+                    <td>@session.SessionType</td>
+                    <td>@session.StartedAt[..10]</td>
+                    <td>@session.LapCount</td>
+                    <td>@(session.BestLapTimeMs.HasValue ? FormatTime(session.BestLapTimeMs.Value) : "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<SessionSummaryDto>? _sessions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IReadOnlyList<SessionSummary> summaries = await LapRepository.GetAllSessionsAsync();
+        _sessions = summaries.Select(SessionSummaryDto.FromDomain).ToList();
+    }
+
+    private static string FormatTime(int ms)
+    {
+        TimeSpan t = TimeSpan.FromMilliseconds(ms);
+        return $"{(int)t.TotalMinutes}:{t.Seconds:D2}.{t.Milliseconds:D3}";
+    }
+}

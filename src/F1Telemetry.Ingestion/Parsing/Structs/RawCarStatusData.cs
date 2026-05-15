@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace F1Telemetry.Ingestion.Parsing.Structs;
 
-// F1 2024 per-car status data — 29 bytes. Leading fields only.
+// F1 25 per-car status data — 55 bytes (full struct).
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct RawCarStatusData
 {
@@ -22,6 +22,15 @@ internal struct RawCarStatusData
     public byte ActualTyreCompound;
     public byte VisualTyreCompound;
     public byte TyresAgeLaps;
+    public sbyte VehicleFiaFlags;
+    public float EnginePowerIce;
+    public float EnginePowerMguk;
+    public float ErsStoreEnergy;
+    public byte ErsDeployMode;
+    public float ErsHarvestedThisLapMguk;
+    public float ErsHarvestedThisLapMguh;
+    public float ErsDeployedThisLap;
+    public byte NetworkPaused;
 
-    public const int Size = 29;
+    public const int Size = 55;
 }

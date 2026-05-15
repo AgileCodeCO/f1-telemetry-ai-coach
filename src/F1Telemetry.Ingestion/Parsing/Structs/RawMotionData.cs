@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace F1Telemetry.Ingestion.Parsing.Structs;
 
-// F1 2024 per-car motion data — 60 bytes.
+// F1 25 per-car motion data — 60 bytes (unchanged from F1 24).
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct RawMotionData
 {

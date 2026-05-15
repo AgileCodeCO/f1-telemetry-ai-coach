@@ -1,9 +1,9 @@
+using F1Telemetry.Agents.Clients;
 using F1Telemetry.Agents.Extensions;
 using FluentAssertions;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OllamaSharp;
 
 namespace F1Telemetry.UnitTests.Agents;
 
@@ -21,14 +21,14 @@ public sealed class LlmClientFactoryTests
             .Build();
 
     [Fact]
-    public void AddAgents_Ollama_ResolvesOllamaApiClient()
+    public void AddAgents_Ollama_ResolvesRetryingClientWrappingOllama()
     {
         ServiceProvider sp = new ServiceCollection()
             .AddAgents(BuildConfig("ollama"))
             .BuildServiceProvider();
 
         IChatClient client = sp.GetRequiredService<IChatClient>();
-        client.Should().BeOfType<OllamaApiClient>();
+        client.Should().BeOfType<RetryingChatClient>();
     }
 
     [Fact]

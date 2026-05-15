@@ -2,13 +2,14 @@ using System.Runtime.InteropServices;
 
 namespace F1Telemetry.Ingestion.Parsing.Structs;
 
-// F1 2024 per-car telemetry — 56 bytes. Array fields expanded to named fields to avoid unsafe code.
+// F1 25 per-car telemetry — 60 bytes. Steer float added after Throttle vs F1 24 (was 56).
 // Wire order for tyre arrays: RL=0, RR=1, FL=2, FR=3.
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct RawCarTelemetryData
 {
     public ushort Speed;                   // km/h
     public float Throttle;                 // 0.0–1.0
+    public float Steer;                    // -1.0–1.0 (new in F1 25)
     public float Brake;                    // 0.0–1.0
     public byte Clutch;                    // 0–100
     public sbyte Gear;                     // -1=R, 0=N, 1-8
@@ -38,5 +39,5 @@ internal struct RawCarTelemetryData
     public byte SurfaceType2;              // FL
     public byte SurfaceType3;              // FR
 
-    public const int Size = 56;
+    public const int Size = 60;
 }

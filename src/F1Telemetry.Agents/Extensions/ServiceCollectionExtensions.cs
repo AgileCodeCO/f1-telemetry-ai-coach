@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
         {
             LlmOptions opts = sp.GetRequiredService<IOptions<LlmOptions>>().Value;
             IHttpClientFactory httpFactory = sp.GetRequiredService<IHttpClientFactory>();
-            return opts.Provider.ToLowerInvariant() switch
+            IChatClient inner = opts.Provider.ToLowerInvariant() switch
             {
                 "ollama" => new OllamaApiClient(new Uri(opts.BaseUrl), opts.Model),
                 "lmstudio" => new OpenAIClient(
@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
                 "anthropic" => new AnthropicChatClient(httpFactory, opts),
                 _ => throw new InvalidOperationException($"Unknown LLM provider: {opts.Provider}")
             };
+            return new RetryingChatClient(inner);
         });
         services.AddSingleton<ILapAgent, DeltaAgent>();
         services.AddSingleton<ILapAgent, BrakingAgent>();

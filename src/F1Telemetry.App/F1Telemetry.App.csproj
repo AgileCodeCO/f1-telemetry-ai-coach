@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
+    <PackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFileVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\F1Telemetry.Contracts\F1Telemetry.Contracts.csproj" />
     <ProjectReference Include="..\F1Telemetry.Ingestion\F1Telemetry.Ingestion.csproj" />
     <ProjectReference Include="..\F1Telemetry.Storage\F1Telemetry.Storage.csproj" />

@@ -1,6 +1,6 @@
 namespace F1Telemetry.Agents.Options;
 
-internal sealed class LlmOptions
+public sealed class LlmOptions
 {
     public string Provider { get; set; } = "ollama";
     public string Model { get; set; } = "llama3.2";

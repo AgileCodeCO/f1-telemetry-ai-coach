@@ -1,3 +1,4 @@
+using System.Globalization;
 using F1Telemetry.Contracts;
 using F1Telemetry.Storage.Data;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,76 @@ internal sealed class SqliteLapRepository(F1TelemetryDbContext db) : ILapReposit
             .FirstOrDefaultAsync(ct);
 
         return entity is null ? null : MapToDomain(entity);
+    }
+
+    public async Task<IReadOnlyList<SessionSummary>> GetAllSessionsAsync(CancellationToken ct = default)
+    {
+        List<SessionEntity> sessions = await db.Sessions
+            .Include(s => s.Laps)
+            .OrderByDescending(s => s.StartedAt)
+            .ToListAsync(ct);
+
+        return sessions.Select(s =>
+        {
+            int? best = s.Laps
+                .Where(l => l.IsValid && l.LapTimeMs.HasValue)
+                .Select(l => l.LapTimeMs)
+                .Min();
+
+            bool parsed = DateTimeOffset.TryParse(
+                s.StartedAt, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTimeOffset startedAt);
+
+            return new SessionSummary(
+                SessionId: new SessionId(s.Id),
+                TrackName: s.TrackName,
+                SessionType: s.SessionType,
+                StartedAt: parsed ? startedAt : DateTimeOffset.MinValue,
+                LapCount: s.Laps.Count,
+                BestLapTimeMs: best);
+        }).ToList();
+    }
+
+    public async Task SaveFeedbackAsync(SessionId sessionId, int lapNumber, AgentFinding finding, CancellationToken ct = default)
+    {
+        LapEntity? lap = await db.Laps
+            .FirstOrDefaultAsync(l => l.SessionId == sessionId.Value && l.LapNumber == lapNumber, ct);
+
+        if (lap is null)
+        {
+            return;
+        }
+
+        db.LapFeedback.Add(new LapFeedbackEntity
+        {
+            LapId = lap.Id,
+            AgentName = finding.AgentName,
+            Category = finding.Category.ToString(),
+            Finding = finding.Finding,
+            EstimatedGainMs = finding.EstimatedGainMs,
+            GeneratedAt = DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture),
+        });
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<AgentFinding>> GetFeedbackAsync(SessionId sessionId, int lapNumber, CancellationToken ct = default)
+    {
+        LapEntity? lap = await db.Laps
+            .Include(l => l.Feedback)
+            .FirstOrDefaultAsync(l => l.SessionId == sessionId.Value && l.LapNumber == lapNumber, ct);
+
+        if (lap is null)
+        {
+            return [];
+        }
+
+        return lap.Feedback
+            .Select(f => new AgentFinding(
+                AgentName: f.AgentName,
+                Category: Enum.TryParse(f.Category, out AnalysisCategory cat) ? cat : AnalysisCategory.Delta,
+                Finding: f.Finding,
+                EstimatedGainMs: f.EstimatedGainMs ?? 0))
+            .ToList();
     }
 
     private async Task EnsureSessionExistsAsync(SessionId sessionId, CancellationToken ct)

@@ -1,0 +1,13 @@
+<div class="input-bar">
+    <span class="input-label">@Label</span>
+    <div class="input-track">
+        <div class="input-fill" style="width: @(Value * 100)%; background-color: @Color;"></div>
+    </div>
+    <span class="input-value">@(Value.ToString("P0"))</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public float Value { get; set; }
+    [Parameter] public string Color { get; set; } = "green";
+}

@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using F1Telemetry.Contracts;
 using F1Telemetry.Ingestion.Internal;
+using F1Telemetry.Ingestion.Metrics;
 using F1Telemetry.Ingestion.Options;
 using F1Telemetry.Ingestion.Parsing;
 using F1Telemetry.Ingestion.Services;
@@ -19,6 +20,7 @@ public static class ServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddSingleton<PacketMetrics>();
         services.AddSingleton<IPacketParser, PacketParser>();
         services.AddSingleton<IEventBus, InProcessEventBus>();
 

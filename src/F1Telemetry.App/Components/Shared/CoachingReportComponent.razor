@@ -1,0 +1,34 @@
+<div class="coaching-report">
+    <h2>AI Coaching Report — Lap @Report.LapNumber (@FormatTime(Report.LapTimeMs))</h2>
+
+    @if (Report.Findings.Count == 0)
+    {
+        <p>No findings — great lap!</p>
+    }
+    else
+    {
+        <ol class="findings-list">
+            @foreach (FindingDto finding in Report.Findings)
+            {
+                <li class="finding-card">
+                    <div class="finding-header">
+                        <span class="finding-agent">@finding.AgentName</span>
+                        <span class="finding-category badge">@finding.Category</span>
+                        <span class="finding-gain">+@finding.EstimatedGainMs ms</span>
+                    </div>
+                    <p class="finding-text">@finding.Finding</p>
+                </li>
+            }
+        </ol>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CoachingReportDto Report { get; set; } = null!;
+
+    private static string FormatTime(int ms)
+    {
+        TimeSpan t = TimeSpan.FromMilliseconds(ms);
+        return $"{(int)t.TotalMinutes}:{t.Seconds:D2}.{t.Milliseconds:D3}";
+    }
+}

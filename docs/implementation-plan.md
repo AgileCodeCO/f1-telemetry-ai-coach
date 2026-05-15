@@ -9,7 +9,7 @@
 
 ---
 
-## Sprint 0 — Project Scaffold (1–2 days)
+## Phase 0 — Project Scaffold (1–2 days)
 
 **Goal:** Repository structure, build pipeline, and local tooling verified.
 
@@ -30,7 +30,7 @@
 
 ---
 
-## Sprint 1 — UDP Ingestion + Packet Parsing (3–4 days)
+## Phase 1 — UDP Ingestion + Packet Parsing (3–4 days)
 
 **Goal:** Receive live telemetry from the PS5 and log parsed packet fields to the console.
 
@@ -57,7 +57,7 @@
   - Publishes `LapCompletedEvent` on the in-process event bus
 - Register services in `IServiceCollection` extension: `AddIngestion()`
 
-**Tests (Sprint 1)**
+**Tests (Phase 1)**
 
 - Unit: `PacketParser` — deserialize fixture bytes for each packet ID, assert field values
 - Unit: `SessionManager` — simulate lap number transitions, assert event published
@@ -70,7 +70,7 @@ With the PS5 on the same network (or the integration test harness running), the 
 
 ---
 
-## Sprint 2 — Local Storage (3–4 days)
+## Phase 2 — Local Storage (3–4 days)
 
 **Goal:** Persist telemetry to InfluxDB and SQLite. Verify data round-trips correctly.
 
@@ -91,7 +91,7 @@ With the PS5 on the same network (or the integration test harness running), the 
   - Read back for replay: `GetArchivedLapAsync(sessionUID, lapNumber)`
 - Register services: `AddStorage()`
 
-**Tests (Sprint 2)**
+**Tests (Phase 2)**
 
 - Unit: `SqliteLapRepository` — use SQLite in-memory mode, assert CRUD operations
 - Unit: `FileLapArchive` — use a temp directory, assert write/read round-trip
@@ -104,7 +104,7 @@ After a simulated 3-lap session from the test harness, all lap data is queryable
 
 ---
 
-## Sprint 3 — Delta Agent + LLM Integration (4–5 days)
+## Phase 3 — Delta Agent + LLM Integration (4–5 days)
 
 **Goal:** First AI coaching feedback. After each lap, generate a time-delta breakdown and push it to the console (no UI yet).
 
@@ -126,7 +126,7 @@ After a simulated 3-lap session from the test harness, all lap data is queryable
 - Subscribe `AgentOrchestrator` to `LapCompletedEvent`
 - Register services: `AddAgents()`
 
-**Tests (Sprint 3)**
+**Tests (Phase 3)**
 
 - Unit: `DeltaAgent` — mock `ILapRepository`, mock `ITelemetryRepository`, mock `ILlmClient` returning fixture JSON; assert `AgentFinding` parsed correctly
 - Unit: `LlmClientFactory` — assert correct implementation resolved for each provider name
@@ -139,7 +139,7 @@ After each simulated lap from the test harness, a formatted delta report prints 
 
 ---
 
-## Sprint 4 — Remaining Agents (4–5 days)
+## Phase 4 — Remaining Agents (4–5 days)
 
 **Goal:** Full specialist set producing ranked coaching feedback.
 
@@ -166,7 +166,7 @@ After each simulated lap from the test harness, a formatted delta report prints 
 - Wire all five agents into `AgentOrchestrator.RunAllAsync` with `Task.WhenAll`
 - Sort findings by `EstimatedGainMs` descending before returning the report
 
-**Tests (Sprint 4)**
+**Tests (Phase 4)**
 
 - Unit tests for each new agent following the same mock-inject pattern as `DeltaAgent`
 - Unit: `AgentOrchestrator` — assert full fan-out, assert findings sorted correctly
@@ -178,7 +178,7 @@ A complete `LapCoachingReport` with ranked findings from all specialists is prod
 
 ---
 
-## Sprint 5 — Blazor Dashboard (5–6 days)
+## Phase 5 — Blazor Dashboard (5–6 days)
 
 **Goal:** Visible, real-time coaching interface. The dashboard is the primary deliverable of the project.
 
@@ -199,7 +199,7 @@ A complete `LapCoachingReport` with ranked findings from all specialists is prod
 - Add `TelemetryState` service (`scoped`) as the in-memory state container for the live page
 - Implement `LapChartComponent` and `CoachingReportComponent` as reusable Blazor components
 
-**Tests (Sprint 5)**
+**Tests (Phase 5)**
 
 - Unit: `TelemetryState` — assert frame buffering, decimation to 10Hz, rolling window trim
 - Unit: Coaching card sort logic — assert findings ordered by gain
@@ -212,7 +212,7 @@ The full application is usable end-to-end. Open `http://localhost:5000`, start a
 
 ---
 
-## Sprint 6 — Polish, Hardening, and Performance (3–4 days)
+## Phase 6 — Polish, Hardening, and Performance (3–4 days)
 
 **Goal:** Production-quality reliability for everyday use.
 
@@ -235,7 +235,7 @@ The application handles 60Hz telemetry for a full race distance without memory g
 
 ## Milestones Summary
 
-| Sprint | Duration | Key Deliverable |
+| Phase | Duration | Key Deliverable |
 |---|---|---|
 | 0 | 2 days | Solution scaffold, CI pipeline |
 | 1 | 4 days | Live UDP parsing to console |

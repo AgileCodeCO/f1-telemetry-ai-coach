@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="F1Telemetry.UnitTests" />
+    <InternalsVisibleTo Include="F1Telemetry.Benchmarks" />
   </ItemGroup>
 
 </Project>

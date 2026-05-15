@@ -1,0 +1,36 @@
+@page "/settings"
+@rendermode InteractiveServer
+@inject Microsoft.Extensions.Options.IOptions<F1Telemetry.Agents.Options.LlmOptions> LlmOptions
+@inject Microsoft.Extensions.Options.IOptions<F1Telemetry.Ingestion.Options.UdpOptions> UdpOptions
+@inject Microsoft.Extensions.Options.IOptions<F1Telemetry.Storage.Options.StorageOptions> StorageOptions
+
+<PageTitle>Settings — F1 AI Coach</PageTitle>
+
+<h1>Settings</h1>
+
+<section class="settings-section">
+    <h2>LLM Backend</h2>
+    <dl>
+        <dt>Provider</dt><dd>@LlmOptions.Value.Provider</dd>
+        <dt>Model</dt><dd>@LlmOptions.Value.Model</dd>
+        <dt>Base URL</dt><dd>@LlmOptions.Value.BaseUrl</dd>
+        <dt>Timeout</dt><dd>@LlmOptions.Value.TimeoutSeconds s</dd>
+    </dl>
+    <p class="hint">Change provider in <code>appsettings.json</code> and restart the app.</p>
+</section>
+
+<section class="settings-section">
+    <h2>UDP Listener</h2>
+    <dl>
+        <dt>Port</dt><dd>@UdpOptions.Value.Port</dd>
+        <dt>Buffer Size</dt><dd>@UdpOptions.Value.BufferSize bytes</dd>
+    </dl>
+</section>
+
+<section class="settings-section">
+    <h2>Storage</h2>
+    <dl>
+        <dt>Archive Path</dt><dd>@StorageOptions.Value.ArchivePath</dd>
+        <dt>Replay Mode</dt><dd>@(StorageOptions.Value.ReplayMode ? "Enabled" : "Disabled")</dd>
+    </dl>
+</section>

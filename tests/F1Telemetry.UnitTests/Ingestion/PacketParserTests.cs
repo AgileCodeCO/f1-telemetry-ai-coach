@@ -92,7 +92,7 @@ public class PacketParserTests
     [Fact]
     public void Parse_PacketTooShort_ReturnsFail()
     {
-        byte[] raw = new byte[10]; // shorter than 30-byte header
+        byte[] raw = new byte[10]; // shorter than 29-byte header
 
         var result = _parser.Parse(raw);
 

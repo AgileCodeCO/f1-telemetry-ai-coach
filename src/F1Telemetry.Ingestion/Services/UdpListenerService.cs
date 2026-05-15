@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Channels;
 using F1Telemetry.Contracts;
+using F1Telemetry.Ingestion.Metrics;
 using F1Telemetry.Ingestion.Options;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace F1Telemetry.Ingestion.Services;
 internal sealed partial class UdpListenerService(
     ChannelWriter<RawPacket> channelWriter,
     IOptions<UdpOptions> options,
+    PacketMetrics metrics,
     ILogger<UdpListenerService> logger) : BackgroundService
 {
     [LoggerMessage(Level = LogLevel.Information, Message = "UDP listener bound to port {Port}")]
@@ -39,8 +41,10 @@ internal sealed partial class UdpListenerService(
                 var result = await udpClient.ReceiveAsync(ct);
                 var packet = new RawPacket(result.Buffer, result.Buffer.Length, DateTimeOffset.UtcNow);
 
+                metrics.RecordReceived();
                 if (!channelWriter.TryWrite(packet))
                 {
+                    metrics.RecordDropped();
                     LogPacketDropped(logger, opts.Port);
                 }
             }

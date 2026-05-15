@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Channels;
 using F1Telemetry.Contracts;
+using F1Telemetry.Ingestion.Metrics;
 using F1Telemetry.Ingestion.Options;
 using F1Telemetry.Ingestion.Services;
 using FluentAssertions;
@@ -18,7 +19,7 @@ public class UdpListenerServiceTests
         ChannelWriter<RawPacket> writer, int port = TestPort)
     {
         var opts = Options.Create(new UdpOptions { Port = port, BufferSize = 4096 });
-        return new UdpListenerService(writer, opts, NullLogger<UdpListenerService>.Instance);
+        return new UdpListenerService(writer, opts, new PacketMetrics(), NullLogger<UdpListenerService>.Instance);
     }
 
     [Fact]

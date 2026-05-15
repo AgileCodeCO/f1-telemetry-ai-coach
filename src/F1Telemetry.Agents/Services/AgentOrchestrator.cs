@@ -61,7 +61,10 @@ internal sealed partial class AgentOrchestrator(
             foreach (AgentFinding finding in findings)
             {
                 LogFinding(logger, finding.AgentName, finding.EstimatedGainMs, finding.Finding);
+                await lapRepository.SaveFeedbackAsync(lap.SessionId, lap.LapNumber, finding, ct);
             }
+
+            eventBus.Publish(new CoachingReportReadyEvent(report));
         }
 #pragma warning disable CA1031 // intentional broad catch to keep hosted service alive
         catch (Exception ex)

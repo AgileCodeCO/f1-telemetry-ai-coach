@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIVersion)" />
     <PackageReference Include="OllamaSharp" Version="$(OllamaSharpVersion)" />
+    <PackageReference Include="Polly" Version="$(PollyVersion)" />
   </ItemGroup>
 
   <ItemGroup>

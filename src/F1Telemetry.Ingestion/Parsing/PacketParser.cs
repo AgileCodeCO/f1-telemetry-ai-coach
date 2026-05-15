@@ -38,7 +38,8 @@ internal sealed partial class PacketParser(ILogger<PacketParser> logger) : IPack
         int offset = RawPacketHeader.Size + carIndex * RawCarTelemetryData.Size;
         if (data.Length < offset + RawCarTelemetryData.Size)
         {
-            return ParseResult.Fail<IParsedPacket>("CarTelemetry packet too short for player car");
+            return ParseResult.Fail<IParsedPacket>(
+                $"CarTelemetry packet too short for player car (carIndex={carIndex}, got={data.Length}, need={offset + RawCarTelemetryData.Size}, perCarSize={RawCarTelemetryData.Size})");
         }
 
         var raw = MemoryMarshal.Read<RawCarTelemetryData>(data[offset..]);
@@ -65,7 +66,8 @@ internal sealed partial class PacketParser(ILogger<PacketParser> logger) : IPack
         int offset = RawPacketHeader.Size + carIndex * RawLapData.Size;
         if (data.Length < offset + RawLapData.Size)
         {
-            return ParseResult.Fail<IParsedPacket>("LapData packet too short for player car");
+            return ParseResult.Fail<IParsedPacket>(
+                $"LapData packet too short for player car (carIndex={carIndex}, got={data.Length}, need={offset + RawLapData.Size}, perCarSize={RawLapData.Size})");
         }
 
         var raw = MemoryMarshal.Read<RawLapData>(data[offset..]);
@@ -91,7 +93,8 @@ internal sealed partial class PacketParser(ILogger<PacketParser> logger) : IPack
         int offset = RawPacketHeader.Size + carIndex * RawMotionData.Size;
         if (data.Length < offset + RawMotionData.Size)
         {
-            return ParseResult.Fail<IParsedPacket>("MotionData packet too short for player car");
+            return ParseResult.Fail<IParsedPacket>(
+                $"MotionData packet too short for player car (carIndex={carIndex}, got={data.Length}, need={offset + RawMotionData.Size}, perCarSize={RawMotionData.Size})");
         }
 
         var raw = MemoryMarshal.Read<RawMotionData>(data[offset..]);
@@ -136,7 +139,8 @@ internal sealed partial class PacketParser(ILogger<PacketParser> logger) : IPack
         int offset = RawPacketHeader.Size + carIndex * RawCarStatusData.Size;
         if (data.Length < offset + RawCarStatusData.Size)
         {
-            return ParseResult.Fail<IParsedPacket>("CarStatus packet too short for player car");
+            return ParseResult.Fail<IParsedPacket>(
+                $"CarStatus packet too short for player car (carIndex={carIndex}, got={data.Length}, need={offset + RawCarStatusData.Size}, perCarSize={RawCarStatusData.Size})");
         }
 
         var raw = MemoryMarshal.Read<RawCarStatusData>(data[offset..]);
@@ -155,7 +159,8 @@ internal sealed partial class PacketParser(ILogger<PacketParser> logger) : IPack
         int offset = RawPacketHeader.Size + carIndex * RawCarDamageData.FullSize;
         if (data.Length < offset + RawCarDamageData.MinSize)
         {
-            return ParseResult.Fail<IParsedPacket>("CarDamage packet too short for player car");
+            return ParseResult.Fail<IParsedPacket>(
+                $"CarDamage packet too short for player car (carIndex={carIndex}, got={data.Length}, need={offset + RawCarDamageData.MinSize}, perCarSize={RawCarDamageData.FullSize})");
         }
 
         var raw = MemoryMarshal.Read<RawCarDamageData>(data[offset..]);

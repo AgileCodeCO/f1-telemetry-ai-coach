@@ -24,6 +24,13 @@
     <MicrosoftEntityFrameworkCoreVersion>10.0.7</MicrosoftEntityFrameworkCoreVersion>
     <InfluxDbClientVersion>5.0.0</InfluxDbClientVersion>
     <SerilogVersion>4.2.0</SerilogVersion>
+    <SerilogAspNetCoreVersion>8.0.3</SerilogAspNetCoreVersion>
+    <SerilogSinksFileVersion>6.0.0</SerilogSinksFileVersion>
+    <PollyVersion>8.5.2</PollyVersion>
+    <BenchmarkDotNetVersion>0.15.1</BenchmarkDotNetVersion>
+    <!-- ASP.NET Core testing -->
+    <MicrosoftAspNetCoreMvcTestingVersion>10.0.7</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreSignalRClientVersion>10.0.7</MicrosoftAspNetCoreSignalRClientVersion>
     <!-- Test packages -->
     <XUnitVersion>2.9.3</XUnitVersion>
     <NSubstituteVersion>5.3.0</NSubstituteVersion>

@@ -4,7 +4,7 @@ using F1Telemetry.Ingestion.Parsing.Structs;
 
 namespace F1Telemetry.UnitTests.Fixtures;
 
-// Creates valid F1 2024 UDP binary packets for use in unit tests.
+// Creates valid F1 25 UDP binary packets for use in unit tests.
 // Packet layout matches the raw structs in F1Telemetry.Ingestion.Parsing.Structs.
 internal static class TelemetryFixtures
 {
@@ -27,11 +27,12 @@ internal static class TelemetryFixtures
         // Write player car's telemetry at the correct offset
         int carOffset = RawPacketHeader.Size + playerCarIndex * RawCarTelemetryData.Size;
         var car = span[carOffset..];
-        BinaryPrimitives.WriteUInt16LittleEndian(car, (ushort)speedKmh);  // offset 0: speed
-        BinaryPrimitives.WriteSingleLittleEndian(car[2..], throttle);      // offset 2: throttle
-        BinaryPrimitives.WriteSingleLittleEndian(car[6..], brake);         // offset 6: brake
-        car[11] = (byte)gear;                                              // offset 11: gear (sbyte)
-        BinaryPrimitives.WriteUInt16LittleEndian(car[12..], (ushort)engineRpm); // offset 12
+        BinaryPrimitives.WriteUInt16LittleEndian(car, (ushort)speedKmh);   // offset  0: speed
+        BinaryPrimitives.WriteSingleLittleEndian(car[2..], throttle);       // offset  2: throttle
+        // offset 6: steer (F1 25) — left at zero
+        BinaryPrimitives.WriteSingleLittleEndian(car[10..], brake);         // offset 10: brake
+        car[15] = (byte)gear;                                               // offset 15: gear (sbyte)
+        BinaryPrimitives.WriteUInt16LittleEndian(car[16..], (ushort)engineRpm); // offset 16: engineRPM
 
         return packet;
     }
@@ -65,12 +66,12 @@ internal static class TelemetryFixtures
         return packet;
     }
 
-    // Writes the 30-byte header fields at the start of the span
+    // Writes the 29-byte F1 25 header fields at the start of the span
     private static void WriteHeader(Span<byte> span, PacketId packetId, byte playerCarIndex)
     {
-        BinaryPrimitives.WriteUInt16LittleEndian(span, 2024);            // offset  0: PacketFormat
+        BinaryPrimitives.WriteUInt16LittleEndian(span, 2025);            // offset  0: PacketFormat
         span[6] = (byte)packetId;                                        // offset  6: PacketId
-        BinaryPrimitives.WriteUInt64LittleEndian(span[8..], 0xDEADBEEFCAFEBABEul); // offset 8: SessionUID
-        span[28] = playerCarIndex;                                       // offset 28: PlayerCarIndex
+        BinaryPrimitives.WriteUInt64LittleEndian(span[7..], 0xDEADBEEFCAFEBABEul); // offset 7: SessionUID
+        span[27] = playerCarIndex;                                       // offset 27: PlayerCarIndex
     }
 }

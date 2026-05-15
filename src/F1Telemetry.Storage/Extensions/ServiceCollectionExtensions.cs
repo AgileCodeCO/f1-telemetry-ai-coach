@@ -37,6 +37,9 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<LapStorageService>();
         services.AddHostedService<DatabaseMigrationService>();
 
+        services.AddSingleton<InfluxDbWatchdogService>();
+        services.AddHostedService(sp => sp.GetRequiredService<InfluxDbWatchdogService>());
+
         return services;
     }
 

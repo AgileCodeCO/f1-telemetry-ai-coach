@@ -1,0 +1,84 @@
+@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject TelemetryState TelemetryState
+@inject IEventBus EventBus
+@inject PacketMetrics PacketMetrics
+@implements IAsyncDisposable
+
+<PageTitle>Dashboard — F1 AI Coach</PageTitle>
+
+<h1>Live Telemetry</h1>
+
+@if (PacketMetrics.DropRate > 0.01)
+{
+    <div class="alert-drop-rate">
+        Warning: UDP packet drop rate @(PacketMetrics.DropRate.ToString("P1")) — channel overloaded
+    </div>
+}
+
+@if (_latest is null)
+{
+    <p class="status-idle">Waiting for telemetry — start a session on PS5.</p>
+}
+else
+{
+    <div class="telemetry-grid">
+        <div class="telemetry-card">
+            <span class="label">Speed</span>
+            <span class="value">@_latest.SpeedKmh.ToString("F0") km/h</span>
+        </div>
+        <div class="telemetry-card">
+            <span class="label">Gear</span>
+            <span class="value">@_latest.Gear</span>
+        </div>
+        <div class="telemetry-card">
+            <span class="label">RPM</span>
+            <span class="value">@_latest.EngineRpm.ToString("N0")</span>
+        </div>
+        <div class="telemetry-card">
+            <span class="label">DRS</span>
+            <span class="value">@(_latest.Drs ? "ON" : "OFF")</span>
+        </div>
+    </div>
+
+    <div class="input-bars">
+        <LapChartComponent Label="Throttle" Value="@_latest.Throttle" Color="green" />
+        <LapChartComponent Label="Brake" Value="@_latest.Brake" Color="red" />
+    </div>
+
+    <p class="lap-info">Lap @_latest.LapNumber</p>
+}
+
+@if (_report is not null)
+{
+    <CoachingReportComponent Report="_report" />
+}
+
+@code {
+    private TelemetryFrameDto? _latest;
+    private CoachingReportDto? _report;
+
+    protected override void OnInitialized()
+    {
+        TelemetryState.FrameDecimated += OnFrame;
+        EventBus.Subscribe<CoachingReportReadyEvent>(OnReportReady);
+    }
+
+    private void OnFrame(TelemetryFrameDto dto)
+    {
+        _latest = dto;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnReportReady(CoachingReportReadyEvent e)
+    {
+        _report = CoachingReportDto.FromDomain(e.Report);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        TelemetryState.FrameDecimated -= OnFrame;
+        return ValueTask.CompletedTask;
+    }
+}
