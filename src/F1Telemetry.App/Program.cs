@@ -12,10 +12,6 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-    .CreateBootstrapLogger();
-
 try
 {
     var builder = WebApplication.CreateBuilder(args);
@@ -101,11 +97,7 @@ try
 }
 catch (Exception ex) when (ex is not HostAbortedException)
 {
-    Log.Fatal(ex, "Application startup failed");
-}
-finally
-{
-    Log.CloseAndFlush();
+    Console.Error.WriteLine($"[FTL] Application startup failed: {ex}");
 }
 
 public partial class Program { }

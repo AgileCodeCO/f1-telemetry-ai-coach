@@ -7,6 +7,9 @@
     <IsPackable>false</IsPackable>
     <!-- Underscore-separated test names (MethodName_Scenario_Expected) are standard xUnit convention -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <!-- Disable the auto-generated test entry point so our Simulator.Main is used by dotnet run -->
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <StartupObject>F1Telemetry.IntegrationTests.Simulator</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

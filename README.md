@@ -66,7 +66,36 @@ Open `http://localhost:5291`. Start a race on the PS5 and watch live telemetry s
 
 ## Development Without a PS5
 
-Enable replay mode to re-feed archived lap JSON through the full pipeline:
+Two options are available when you don't have a console broadcasting live telemetry.
+
+### Option A — UDP Game Simulator
+
+Sends correctly structured F1 25 UDP packets directly to a running instance of the app. This exercises the full live pipeline — ingestion, lap detection, storage, and AI analysis — exactly as a real PS5 would.
+
+Start the app first, then run the simulator in a second terminal:
+
+```bash
+# Start the app
+dotnet run --project src/F1Telemetry.App
+
+# Simulate 5 laps at 60 fps to the default port
+dotnet run --project tests/F1Telemetry.IntegrationTests -- --simulate --laps 5 --port 20777
+
+# Slower rate for easier debugging
+dotnet run --project tests/F1Telemetry.IntegrationTests -- --simulate --laps 3 --port 20777 --fps 20
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--laps N` | `3` | Number of laps to simulate |
+| `--port N` | `20777` | UDP port (must match `Udp:Port` in appsettings) |
+| `--fps N` | `60` | Packet rate in frames per second (`0` = as fast as possible) |
+
+Press **Ctrl+C** to abort mid-session.
+
+### Option B — Replay Mode
+
+Re-feeds archived lap JSON through the pipeline. Useful when you have data captured from a real session and want to re-run the AI analysis without sending UDP packets.
 
 ```json
 // src/F1Telemetry.App/appsettings.Development.json

@@ -21,6 +21,7 @@ public sealed class SignalRHubTests : IClassFixture<WebApplicationFactory<Progra
         {
             b.UseSetting("ConnectionStrings:Sqlite", $"Data Source={_dbPath}");
             b.UseSetting("LLM:Provider", "ollama");
+            b.UseSetting("Udp:Port", "0");
         });
     }
 
@@ -75,6 +76,7 @@ public sealed class SignalRHubTests : IClassFixture<WebApplicationFactory<Progra
 
     public void Dispose()
     {
+        _factory.Dispose();
         if (File.Exists(_dbPath))
         {
             File.Delete(_dbPath);

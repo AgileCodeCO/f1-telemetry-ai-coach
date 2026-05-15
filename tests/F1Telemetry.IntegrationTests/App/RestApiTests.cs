@@ -11,16 +11,19 @@ public sealed class RestApiTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly string _dbPath;
     private readonly HttpClient _client;
+    private readonly WebApplicationFactory<Program> _factory;
 
     public RestApiTests(WebApplicationFactory<Program> factory)
     {
         _dbPath = Path.Combine(Path.GetTempPath(), $"f1-test-{Guid.NewGuid():N}.db");
 
-        _client = factory.WithWebHostBuilder(b =>
+        _factory = factory.WithWebHostBuilder(b =>
         {
             b.UseSetting("ConnectionStrings:Sqlite", $"Data Source={_dbPath}");
             b.UseSetting("LLM:Provider", "ollama");
-        }).CreateClient();
+            b.UseSetting("Udp:Port", "0");
+        });
+        _client = _factory.CreateClient();
     }
 
     [Fact]
@@ -69,6 +72,7 @@ public sealed class RestApiTests : IClassFixture<WebApplicationFactory<Program>>
     public void Dispose()
     {
         _client.Dispose();
+        _factory.Dispose();
         if (File.Exists(_dbPath))
         {
             File.Delete(_dbPath);

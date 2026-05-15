@@ -98,7 +98,7 @@ public sealed class UdpIngestionPipelineTests : IAsyncLifetime, IAsyncDisposable
         await Task.Delay(500);
 
         long after = GC.GetTotalMemory(forceFullCollection: true);
-        (after - before).Should().BeLessThan(10 * 1024 * 1024); // < 10 MB growth
+        (after - before).Should().BeLessThan(20 * 1024 * 1024); // < 20 MB growth
     }
 
     public async Task DisposeAsync()

@@ -738,6 +738,6 @@ dotnet test --collect:"XPlat Code Coverage"
 reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"coverage-report" -reporttypes:Html
 start coverage-report/index.html
 
-# Run the game simulator standalone for manual inspection
-dotnet run --project tests/F1Telemetry.IntegrationTests -- simulate --laps 5 --port 20777
+# Run the UDP simulator against a running app (see README — Development Without a PS5)
+dotnet run --project tests/F1Telemetry.IntegrationTests -- --simulate --laps 5 --port 20777 --fps 60
 ```
